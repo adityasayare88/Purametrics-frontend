@@ -1,7 +1,14 @@
-import type { NextConfig } from "next";
+import { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  async rewrites() {
+    return [
+      {
+        source: '/api/predict',
+        destination: 'https://water-quality-test-wmju.onrender.com/predict',
+      },
+    ];
+  },
 };
 
 export default nextConfig;
