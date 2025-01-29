@@ -46,7 +46,7 @@ const fieldPlaceholders: Record<keyof WaterPredictionFormData, string> = {
 
 export default function WaterPredictionForm() {
   const [formData, setFormData] = useState<WaterPredictionFormData>(initialFormData);
-  const [result, setResult] = useState<string | null>(null);
+  const [result, setResult] = useState<{ prediction: number; message: string } | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -82,9 +82,7 @@ export default function WaterPredictionForm() {
 
       const response = await fetch('/api/predict', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(numericalFormData),
       });
 
@@ -95,7 +93,7 @@ export default function WaterPredictionForm() {
       }
 
       const data = await response.json();
-      setResult(data.message);
+      setResult(data); // Store full response object
     } catch (err) {
       console.error('API Error:', err);
       setError(
@@ -160,19 +158,22 @@ export default function WaterPredictionForm() {
           </Alert>
         )}
 
-        {result && (
-          <div className={`mt-6 p-4 rounded-lg shadow-md ${result === "Water is potable" ? "bg-green-100 text-green-800 border border-green-300" : "bg-red-100 text-red-800 border border-red-300"}`}>
-            <h3 className="font-bold text-xl">Prediction Result</h3>
-            <p className="mt-1 text-lg">{result === "Water is potable" ? "✅ The water is safe for drinking." : "❌ The water is not safe for drinking."}</p>
-            {/* Displaying result in a more readable format */}
-            <div className={`mt-2 p-2 rounded-md ${result === "Water is potable" ? "bg-green-50" : "bg-red-50"}`}>
-              <strong>Summary:</strong>
-              <ul className="list-disc pl-5 mt-1">
-                <li><strong>Recommendation:</strong> {result === "Water is potable" ? "You can drink it!" : "Avoid consumption."}</li>
-              </ul>
-            </div>
-          </div>
-        )}
+{result && (
+  <div className={`mt-6 p-4 rounded-lg shadow-md ${result.prediction === 0 ? "bg-red-100 text-red-800 border border-red-300" : "bg-green-100 text-green-800 border border-green-300"}`}>
+    <h3 className="font-bold text-xl">Prediction Result</h3>
+    <p className="mt-1 text-lg">
+      {result.prediction === 0 ? "❌ The water is not safe for drinking." : "✅ The water is safe for drinking."}
+    </p>
+   {/* <p className="mt-1 font-semibold">{result.message}</p> */}
+    <div className={`mt-2 p-2 rounded-md ${result.prediction === 0 ? "bg-red-50" : "bg-green-50"}`}>
+      <strong>Summary:</strong>
+      <ul className="list-disc pl-5 mt-1">
+        <li><strong>Recommendation:</strong> {result.prediction === 0 ? "Avoid consumption." : "You can drink it!"}</li>
+      </ul>
+    </div>
+  </div>
+)}
+
       </CardContent>
     </Card>
   );
